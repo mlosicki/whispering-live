@@ -11,6 +11,12 @@
 Streaming transcriber with [whisper](https://github.com/openai/whisper).
 Enough machine power is needed to transcribe in real time.
 
+This fork adds support for audio from livestreams without any devices. You only need to provide a Youtube/Twitch link. Uses [streamlink](https://github.com/streamlink/streamlink) to get livestream URLs.
+This repo takes inspiration from:
+
+- [Awexander/audioWhisper](https://github.com/Awexander/audioWhisper) which is similar to `whispering`, but splits the audio into files first.
+- [fortypercnt/stream-translator](https://github.com/fortypercnt/stream-translator) which does work with audio livestreams, but based on the original ``whisper`` repo and not ``whispering``.
+
 ## Setup
 
 ```bash
@@ -35,6 +41,9 @@ whispering --language en --model tiny
 - ``-t`` sets temperatures to decode. You can set several like ``-t 0.0 -t 0.1 -t 0.5``, but too many temperatures exhaust decoding time
 - ``--debug`` outputs logs for debug
 - ``--no-vad`` disables VAD (Voice Activity Detection). This forces whisper to analyze non-voice activity sound period
+- ``--stream`` set the Twitch/Youtube link
+- ``--stream-direct-url`` set the direct URL link to the audio livestream e.g. by running ``yt-dlp --get-url -f ba <Twitch/Youtube link>``
+- ``--interval`` How many seconds of audio should be sent to the language model. You should consider enabling ``--allow-padding`` if you want to limit to exactly that number of seconds, regardless if the person is still speaking (see below).
 
 ### Parse interval
 

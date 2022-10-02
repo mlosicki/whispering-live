@@ -17,6 +17,7 @@ from whisper.tokenizer import LANGUAGES, TO_LANGUAGE_CODE
 from whispering.pbar import ProgressBar
 from whispering.schema import Context, WhisperConfig
 from whispering.serve import serve_with_websocket
+from whispering.stream_src import transcribe_from_stream
 from whispering.transcriber import WhisperStreamingTranscriber
 from whispering.websocket_client import run_websocket_client
 
@@ -170,6 +171,22 @@ def get_opts() -> argparse.Namespace:
         action="store_true",
     )
     group_misc.add_argument(
+        "--stream",
+        type=str,
+        help="URL of the stream e.g. https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    )
+    group_misc.add_argument(
+        "--stream-direct-url",
+        type=str,
+        help="Set this flag to pass the URL directly to ffmpeg. Otherwise, streamlink will get the stream URL.",
+    )
+    group_misc.add_argument(
+        "--interval",
+        type=int,
+        default=8,
+        help="Interval between calls to the language model in seconds",
+    )
+    group_misc.add_argument(
         "--show-devices",
         action="store_true",
         help="Show MIC devices",
@@ -283,6 +300,20 @@ def main() -> None:
                 host=opts.host,
                 port=opts.port,
             )
+        )
+    elif opts.stream or opts.stream_direct_url:
+        assert opts.language is not None
+        assert opts.model is not None
+        wsp = get_wshiper(opts=opts)
+        ctx: Context = get_context(opts=opts)
+
+        transcribe_from_stream(
+            wsp=wsp,
+            interval=opts.interval,
+            stream=opts.stream,
+            direct_url=opts.stream_direct_url,
+            no_progress=opts.no_progress,
+            ctx=ctx,
         )
     else:
         assert opts.language is not None
