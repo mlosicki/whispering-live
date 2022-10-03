@@ -86,7 +86,7 @@ def transcribe_from_stream(
             if not no_progress:
                 sys.stderr.write("\r")
                 sys.stderr.flush()
-            print(f"{chunk.start:.2f}->{chunk.end:.2f}\t{chunk.text}")
+            print(f"{chunk.start:.2f}->{chunk.end:.2f}\t{chunk.text}", flush=True)
             if not no_progress:
                 sys.stderr.write("Analyzing")
                 sys.stderr.flush()
