@@ -13,7 +13,8 @@ sounddevice = "^0.4.5"
 pydantic = "^1.10.2"
 websockets = "^10.3"
 tqdm = "*"
-torchaudio = "^0.12.1"
+torchaudio = "*"
+torch = "1.11.0"
 streamlink = "^5.0.1"
 
 
