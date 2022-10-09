@@ -7,10 +7,13 @@ import ffmpeg
 import numpy as np
 from whisper.audio import SAMPLE_RATE
 
+from whispering.deepl_cli import DeeplCli
 from whispering.schema import Context
 from whispering.transcriber import WhisperStreamingTranscriber
 
 logger = getLogger(__name__)
+
+external_translator = None
 
 
 def open_stream(*, stream: Optional[str], direct_url: Optional[str]) -> Popen:
@@ -58,6 +61,7 @@ def transcribe_from_stream(
     direct_url: str,
     ctx: Context,
     no_progress: bool,
+    external_translator_name: str,
 ) -> None:
     logger.info("Ready to transcribe")
     idx: int = 0
@@ -81,15 +85,25 @@ def transcribe_from_stream(
         if not no_progress:
             sys.stderr.write("Analyzing")
             sys.stderr.flush()
-
+        full_text = ""
         for chunk in wsp.transcribe(audio=audio, ctx=ctx):
             if not no_progress:
                 sys.stderr.write("\r")
                 sys.stderr.flush()
             print(f"{chunk.start:.2f}->{chunk.end:.2f}\t{chunk.text}", flush=True)
+            full_text += f"{chunk.text}\n\n"
             if not no_progress:
                 sys.stderr.write("Analyzing")
                 sys.stderr.flush()
+        if external_translator_name == "deepl":
+            # TODO refactor as class
+            global external_translator
+            if external_translator is None:
+                external_translator = DeeplCli()
+            translated = external_translator.translate(text=full_text)
+            if translated:
+                print("Translation:", flush=True)
+                print(f"{translated}", flush=True)
         idx += 1
         if not no_progress:
             sys.stderr.write("\r")

@@ -16,6 +16,8 @@ tqdm = "*"
 torchaudio = "*"
 torch = "1.11.0"
 streamlink = "^5.0.1"
+deepl = "^1.11.0"
+CacheControl = "^0.12.11"
 
 
 [tool.poetry.group.dev.dependencies]

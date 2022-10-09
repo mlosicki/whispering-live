@@ -183,8 +183,15 @@ def get_opts() -> argparse.Namespace:
     group_misc.add_argument(
         "--interval",
         type=int,
-        default=8,
+        default=30,
         help="Interval between calls to the language model in seconds",
+    )
+    group_misc.add_argument(
+        "--external-translator",
+        type=str,
+        default="deepl",
+        choices=["deepl", "none"],
+        help="Send the output of Whisper to a third-party translator",
     )
     group_misc.add_argument(
         "--show-devices",
@@ -314,6 +321,7 @@ def main() -> None:
             direct_url=opts.stream_direct_url,
             no_progress=opts.no_progress,
             ctx=ctx,
+            external_translator_name=opts.external_translator,
         )
     else:
         assert opts.language is not None
