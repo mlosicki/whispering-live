@@ -1,5 +1,5 @@
 import os
-from logging import getLogger
+from logging import WARN, getLogger
 from typing import Optional
 
 import deepl
@@ -7,6 +7,7 @@ import deepl
 DEEPL_APIKEY_ENVVAR = "DEEPL_API_KEY"
 
 logger = getLogger(__name__)
+getLogger('deepl').setLevel(WARN)
 
 
 # Whisper allows you to also translate the text instead of just transcribing it,

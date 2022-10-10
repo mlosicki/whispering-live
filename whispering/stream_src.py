@@ -90,8 +90,8 @@ def transcribe_from_stream(
             if not no_progress:
                 sys.stderr.write("\r")
                 sys.stderr.flush()
-            print(f"{chunk.start:.2f}->{chunk.end:.2f}\t{chunk.text}", flush=True)
-            full_text += f"{chunk.text}\n\n"
+            print(f"({chunk.avg_logprob}){chunk.start:.2f}->{chunk.end:.2f}\t{chunk.text}", flush=True)
+            full_text += f"{chunk.text}\n"
             if not no_progress:
                 sys.stderr.write("Analyzing")
                 sys.stderr.flush()

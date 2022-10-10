@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import time
 from logging import getLogger
 from typing import Final, Iterator, Optional, Union
 
@@ -220,7 +221,7 @@ class WhisperStreamingTranscriber:
                 yield chunk
             ctx.timestamp += duration
 
-        if result.temperature > ctx.buffer_threshold:
+        if True or result.temperature > ctx.buffer_threshold:
             # do not feed the prompt tokens if a high temperature was used
             del ctx.buffer_tokens
             ctx.buffer_tokens = []
@@ -233,20 +234,27 @@ class WhisperStreamingTranscriber:
         ctx: Context,
     ) -> Iterator[ParsedChunk]:
         logger.debug(f"{len(audio)}")
+        timestamp = str(time.time_ns())
 
         if ctx.vad:
             x = [
                 v
-                for v in self.vad(
+                for v in self.vad.timestamps(
                     audio=audio,
-                    total_block_number=1,
                     threshold=ctx.vad_threshold,
                 )
             ]
+            logger.warning(f"Timestamps {x}")
             if len(x) == 0:  # No speech
                 logger.debug("No speech")
                 ctx.timestamp += len(audio) / N_FRAMES * self.duration_pre_one_mel
                 return
+            audio = self.vad.collect_chunks(x, torch.from_numpy(audio))
+        logger.warning("Computing log-mel spectrogram")
+        if ctx.save_parts:
+            parts_file = f"speech_part-{timestamp}.wav"
+            logger.debug(f"Saving {parts_file}")
+            self.vad.save_audio(parts_file, audio, sampling_rate=SAMPLE_RATE)
 
         new_mel = log_mel_spectrogram(audio=audio)
         logger.debug(f"Incoming new_mel.shape: {new_mel.shape}")
@@ -289,6 +297,11 @@ class WhisperStreamingTranscriber:
                 f"Result: temperature={result.temperature:.2f}, no_speech_prob={result.no_speech_prob:.2f}, "
                 f"avg_logprob={result.avg_logprob:.2f}"
             )
+
+            if ctx.save_parts:
+                parts_file = f"speech_part-{timestamp}.txt"
+                with open(parts_file, "w", encoding="utf-8") as parts:
+                    print(result.text, file=parts, flush=True)
 
             if ctx.no_speech_threshold is not None:
                 if (result.no_speech_prob > ctx.no_speech_threshold) and not (

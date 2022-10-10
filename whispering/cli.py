@@ -194,6 +194,17 @@ def get_opts() -> argparse.Namespace:
         help="Send the output of Whisper to a third-party translator",
     )
     group_misc.add_argument(
+        "--save-parts",
+        action="store_true",
+        help="Save the input audio and the model output as separate files, one file per model invocation",
+    )
+    group_misc.add_argument(
+        "--vad-threshold",
+        type=float,
+        default=0.2,
+        help="Threshold for the VAD",
+    )
+    group_misc.add_argument(
         "--show-devices",
         action="store_true",
         help="Show MIC devices",
@@ -236,6 +247,8 @@ def get_context(*, opts) -> Context:
         temperatures=opts.temperature,
         allow_padding=opts.allow_padding,
         vad=not opts.no_vad,
+        vad_threshold=opts.vad_threshold,
+        save_parts=opts.save_parts,
     )
     logger.debug(f"Context: {ctx}")
     return ctx

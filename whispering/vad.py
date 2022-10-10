@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from logging import getLogger
 from typing import Iterator, Optional
 
 import numpy as np
@@ -8,15 +9,44 @@ from whisper.audio import N_FRAMES, SAMPLE_RATE
 
 from whispering.schema import SpeechSegment
 
+logger = getLogger(__name__)
+
 
 class VAD:
     def __init__(
         self,
     ):
-        self.vad_model, _ = torch.hub.load(
+        self.vad_model, utils = torch.hub.load(
             repo_or_dir="snakers4/silero-vad",
             model="silero_vad",
         )
+        (
+            get_speech_timestamps,
+            save_audio,
+            _,
+            _,
+            collect_chunks
+        ) = utils
+        self.get_speech_timestamps = get_speech_timestamps
+        self.collect_chunks = collect_chunks
+        self.save_audio = save_audio
+
+    def timestamps(
+        self,
+        *,
+        audio: np.ndarray,
+        threshold: float,
+    ):
+        speech_timestamps = self.get_speech_timestamps(
+            torch.from_numpy(audio),
+            self.vad_model,
+            sampling_rate=SAMPLE_RATE,
+            threshold=threshold,
+            min_silence_duration_ms=2000,
+            speech_pad_ms=200
+        )
+        logger.info(f"Speech timestamps {speech_timestamps}")
+        return speech_timestamps
 
     def __call__(
         self,
